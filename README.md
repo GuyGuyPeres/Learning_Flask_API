@@ -7,7 +7,7 @@
 
 # ⚡ Flask API MiniProject
 
-### A clean, modular REST API built with Flask and MongoDB — engineered for clarity, extensibility, and real-world patterns.
+### A clean, modular REST API built with Flask and MongoDB - engineered for clarity, extensibility, and real world patterns.
 
 <br/>
 
