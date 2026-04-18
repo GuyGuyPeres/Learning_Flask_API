@@ -11,7 +11,6 @@
 
 <br/>
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/GuyGuyPeres/Flask_API_MiniProject/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/GuyGuyPeres/Flask_API_MiniProject)
 [![Python Version](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.1.3-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/atlas)
