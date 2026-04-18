@@ -29,7 +29,6 @@
 - [Usage](#-usage)
 - [Architecture](#-architecture)
 - [Contributing](#-contributing)
-- [License](#-license)
 
 ---
 
