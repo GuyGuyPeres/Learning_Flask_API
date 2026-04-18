@@ -41,7 +41,7 @@ def get_task_by_id(task_id):
     
     needed_task = todos.find_one({"_id": ObjectId(task_id)})
     if needed_task:
-        # converstion of _id to string to we can return in it JSON.
+        # conversion of _id to string to we can return in it JSON.
         needed_task["_id"] = str(needed_task["_id"])
         return jsonify(needed_task)
     else:
