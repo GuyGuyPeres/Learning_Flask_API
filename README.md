@@ -399,7 +399,7 @@ Browser (index.html)
 
 
 <details>
-<summary>📐 <strong>Code Style Guidelines</strong></summary>
+<summary>📐 <strong>Code Style Guidelines (click this to read more)</strong></summary>
 
 <br/>
 
