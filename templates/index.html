@@ -42,38 +42,37 @@
       setTimeout(() => errorMsg.classList.add("hidden"), 4000);
     }
 
-    function renderTasks(tasks) {
-      taskList.innerHTML = "";
-      emptyMsg.classList.toggle("hidden", tasks.length > 0);
+  function renderTasks(tasks) {
+    taskList.innerHTML = "";
+    emptyMsg.classList.toggle("hidden", tasks.length > 0);
 
-      tasks.forEach(task => {
-        const li = document.createElement("li");
-        li.className = "task-item" + (task.completed ? " completed" : "");
-        li.dataset.id = task.id;
+    tasks.forEach(task => {
+      const li = document.createElement("li");
+      li.className = "task-item" + (task.completed ? " completed" : "");
+      
+      
+      li.dataset.id = task._id; 
 
-        li.innerHTML = `
-          <label class="checkbox-label">
-            <input type="checkbox" class="toggle-cb" ${task.completed ? "checked" : ""} />
-            <span class="title-text">${escapeHtml(task.title)}</span>
-          </label>
-          <div class="actions">
-            <button class="btn-edit" title="Edit">&#9998;</button>
-            <button class="btn-delete" title="Delete">&#10005;</button>
-          </div>
-        `;
+      li.innerHTML = `
+        <label class="checkbox-label">
+          <input type="checkbox" class="toggle-cb" ${task.completed ? "checked" : ""} />
+          <span class="title-text">${escapeHtml(task.title)}</span>
+        </label>
+        <div class="actions">
+          <button class="btn-edit" title="Edit">&#9998;</button>
+          <button class="btn-delete" title="Delete">&#10005;</button>
+        </div>
+      `;
 
-        // Toggle completed
-        li.querySelector(".toggle-cb").addEventListener("change", () => toggleTask(task.id, !task.completed));
+      li.querySelector(".toggle-cb").addEventListener("change", () => {toggleTask(task._id, !task.completed, task.title); });
+      li.querySelector(".btn-delete").addEventListener("click", () => deleteTask(task._id));
+      const editBtn = li.querySelector(".btn-edit");
+      editBtn.type = "button";
+      editBtn.onclick = () => startEdit(li, task);
 
-        // Delete
-        li.querySelector(".btn-delete").addEventListener("click", () => deleteTask(task.id));
-
-        // Edit
-        li.querySelector(".btn-edit").addEventListener("click", () => startEdit(li, task));
-
-        taskList.appendChild(li);
-      });
-    }
+      taskList.appendChild(li);
+    });
+  }
 
     function escapeHtml(str) {
       return str.replace(/[&<>"']/g, c => ({
@@ -100,71 +99,112 @@
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create task");
-      return data.data;
+      
+      // FIX: Change 'data.data' to 'data.new_task' to match HAFRADA_models.py
+      return data.new_task; 
     }
 
-    async function toggleTask(id, completed) {
-      const res  = await fetch(`${API}/${id}`, {
+
+    async function toggleTask(id, completed, currentTitle) {
+      const res = await fetch(`${API}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completed }),
+        body: JSON.stringify({ 
+            title: currentTitle, 
+            completed: completed 
+        }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to update task");
-      loadTasks();
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        showError(data.error || data.message || "Failed to update task");
+      } else {
+        await loadTasks();
+      }
     }
 
-    async function deleteTask(id) {
-      const res  = await fetch(`${API}/${id}`, { method: "DELETE" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to delete task");
-      loadTasks();
-    }
-
-    async function saveEdit(id, newTitleValue, li) {
+    async function saveEdit(id, newTitleValue, isCompleted) {
       try {
-        const res  = await fetch(`${API}/${id}`, {
+        const body = { title: newTitleValue };
+        if (typeof isCompleted !== "undefined") {
+          body.completed = isCompleted;
+        }
+
+        const res = await fetch(`${API}/${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: newTitleValue }),
+          body: JSON.stringify(body),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to update task");
-        loadTasks();
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.message || data.error || "Failed to update task");
+        }
+
+        await loadTasks();
       } catch (e) {
         showError(e.message);
       }
     }
 
-    function startEdit(li, task) {
-      const label = li.querySelector(".checkbox-label");
-      const titleSpan = li.querySelector(".title-text");
-      const editBtn = li.querySelector(".btn-edit");
-
-      const input = document.createElement("input");
-      input.type = "text";
-      input.className = "edit-input";
-      input.value = task.title;
-
-      label.replaceChild(input, titleSpan);
-      editBtn.textContent = "Save";
-      input.focus();
-
-      const finish = () => {
-        const val = input.value.trim();
-        if (val && val !== task.title) {
-          saveEdit(task.id, val, li);
-        } else {
-          loadTasks(); // revert
-        }
-      };
-
-      editBtn.onclick = finish;
-      input.addEventListener("keydown", e => {
-        if (e.key === "Enter") finish();
-        if (e.key === "Escape") loadTasks();
-      });
+    async function deleteTask(id) {
+      const res  = await fetch(`${API}/${id}`, { method: "DELETE" });
+      
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete task");
+      }
+      loadTasks();
     }
+
+
+    function startEdit(li, task) {
+          const label = li.querySelector(".checkbox-label");
+          const titleSpan = label.querySelector(".title-text"); 
+          const editBtn = li.querySelector(".btn-edit");
+
+          const input = document.createElement("input");
+          input.type = "text";
+          input.className = "edit-input";
+          input.value = task.title;
+
+          input.onclick = (e) => e.stopPropagation();
+
+          if (label && titleSpan) {
+            label.replaceChild(input, titleSpan);
+          }
+          
+          editBtn.textContent = "Save";
+          input.focus();
+
+          const performSave = () => {
+            const val = input.value.trim();
+            if (val) {
+              saveEdit(task._id, val, task.completed);
+            } else {
+              showError("Title cannot be empty");
+            }
+          };
+
+          editBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            performSave();
+          };
+
+          input.addEventListener("keydown", e => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              e.stopPropagation();
+              performSave();
+            }
+            if (e.key === "Escape") {
+              e.stopPropagation();
+              loadTasks();
+            }
+          });
+        }
+
 
     addForm.addEventListener("submit", async e => {
       e.preventDefault();
