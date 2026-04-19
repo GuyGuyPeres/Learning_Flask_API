@@ -25,6 +25,7 @@
 
 - [Tech Stack](#-tech-stack)
 - [Key Features](#-key-features)
+- [Frontend UI](#-frontend-ui)
 - [Getting Started](#-getting-started)
 - [Usage](#-usage)
 - [Architecture](#-architecture)
@@ -36,6 +37,7 @@
 
 | Layer | Technology | Version |
 |---|---|---|
+| **Frontend** | HTML5 / CSS3 / Vanilla JS | — |
 | **Language** | Python | 3.10+ |
 | **Framework** | Flask | 3.1.3 |
 | **Database** | MongoDB (via PyMongo) | 4.16.0 |
@@ -53,6 +55,7 @@
 - **MongoDB Atlas Integration** — Cloud-native database connectivity with TLS/SSL certificate validation via `certifi`, production-ready out of the box.
 - **Centralized Error Handling** — A dedicated errors Blueprint catches `404 NotFound`, `400 BadRequest`, `405 MethodNotAllowed`, and `422 UnprocessableEntity` with clean, consistent JSON responses.
 - **Full CRUD on Tasks** — Create, read, update, and delete tasks with proper HTTP semantics (`GET`, `POST`, `PUT`, `DELETE`).
+- **Interactive Frontend UI** — Includes a browser-based todo interface with inline edit/save controls, responsive cards, and an animated dark background.
 - **Input Validation** — Every write operation validates and sanitizes incoming data before it touches the database.
 - **ObjectId-Safe Responses** — MongoDB's `ObjectId` is automatically serialized to strings, so responses are always valid JSON.
 - **Environment-Driven Config** — All secrets and connection strings live in `.env` — no credentials ever touch the codebase.
@@ -60,7 +63,29 @@
 
 ---
 
-## 🚀 Getting Started
+## 🎨 Frontend UI
+
+### Dark Theme Design
+The frontend features a modern dark theme optimized for extended use:
+
+- **Cosmic Gradient Background** — Dynamic gradient with radial accent layers (blue, purple, green) that evolve across the viewport
+- **Animated Starfield** — Subtle drifting star particles for visual depth and motion
+- **Glowing Orbs** — Smooth floating animation with blur effects creating an immersive backdrop
+- **Semi-Transparent Cards** — Task items and containers use frosted glass aesthetics with `rgba()` layers
+
+### Interactive Features
+- **Inline Edit Mode** — Click the pencil icon on any task to edit the title inline; press `Enter` to save or `Escape` to cancel
+- **Toggle Completion** — Click the checkbox to mark tasks complete/incomplete
+- **Instant Delete** — Click the delete (✕) icon to remove a task immediately
+- **Real-Time Sync** — All changes update the backend instantly via REST API calls
+
+### Responsive Layout
+- Centered container layout that works on desktop and tablet sizes
+- Smooth hover transitions on task cards and buttons
+- Touch-friendly button sizing and spacing
+- Error messages auto-dismiss after 4 seconds
+
+---
 
 ### Prerequisites
 
@@ -142,6 +167,12 @@ The server starts in debug mode at:
 
 ```
 http://127.0.0.1:5000
+```
+
+Then open the web UI at:
+
+```
+http://127.0.0.1:5000/
 ```
 
 ### Run Tests
@@ -274,6 +305,12 @@ Flask_API_MiniProject/
 ├── 📄 HAFRADA_models.py        # Blueprint: Business logic and database operations
 ├── 📄 HAFRADA_errors.py        # Blueprint: Centralized error handlers
 │
+├── 📁 templates/               # HTML frontend
+│   └── index.html              #   ↳ Interactive todo UI with dark theme
+│
+├── 📁 static/                  # CSS and client-side assets
+│   └── style.css               #   ↳ Dark theme, animations, responsive layout
+│
 ├── 📁 archive/                 # Historical versions and experimental code
 │
 ├── 📁 tests/                   # pytest test suite
@@ -288,6 +325,21 @@ Flask_API_MiniProject/
 ### Request Flow
 
 ```
+Browser (index.html)
+     │
+     ├─── GET / ──────────────┐
+     │                        │
+     │   ┌──────────────────────────────┐
+     │   │  Render UI (dark theme)     │
+     │   │  - Starfield background     │
+     │   │  - Task list                │
+     │   │  - Edit/Delete controls     │
+     │   └──────────────────────────────┘
+     │
+     ├─── JavaScript API Calls ────────┐
+     │   (fetch to /tasks)             │
+     │                                 │
+     ▼                                 ▼
 HTTP Request
      │
      ▼
@@ -304,7 +356,11 @@ HAFRADA_models.py
 database.py  ──▶  MongoDB Atlas
      │
      ▼
-JSON Response
+JSON Response ──────────────┐
+                            │
+                            ▼
+                  Update DOM & UI
+                  (smooth transitions)
 ```
 
 ---
