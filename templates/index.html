@@ -11,6 +11,22 @@
   <div class="container">
     <h1>Todo List</h1>
 
+    <div class="list-toolbar">
+      <select id="list-select">
+        <option value="">All tasks</option>
+      </select>
+
+      <form id="new-list-form">
+        <input
+          type="text"
+          id="new-list-name"
+          placeholder="New list name"
+          autocomplete="off"
+        />
+        <button type="submit">Create</button>
+      </form>
+    </div>
+
     <form id="add-form">
       <input
         type="text"
@@ -36,11 +52,69 @@
     const errorMsg  = document.getElementById("error-msg");
     const addForm   = document.getElementById("add-form");
     const newTitle  = document.getElementById("new-title");
+    const listSelect = document.getElementById("list-select");
+    const newListForm = document.getElementById("new-list-form");
+    const newListName = document.getElementById("new-list-name");
+
+    let currentListId = "";
+    let listsCache = [];
 
     function showError(msg) {
       errorMsg.textContent = msg;
       errorMsg.classList.remove("hidden");
       setTimeout(() => errorMsg.classList.add("hidden"), 4000);
+    }
+
+    function updateListHeader() {
+      const header = document.querySelector("h1");
+      if (!header) return;
+      if (currentListId) {
+        const selected = listsCache.find(list => list.id === currentListId);
+        header.textContent = selected ? `Todo List — ${selected.name}` : "Todo List";
+      } else {
+        header.textContent = "Todo List";
+      }
+    }
+
+    function renderLists(lists) {
+      listsCache = Array.isArray(lists) ? lists : [];
+      listSelect.innerHTML = '<option value="">All tasks</option>';
+      listsCache.forEach(list => {
+        const option = document.createElement("option");
+        option.value = list.id || list._id || "";
+        option.textContent = list.name || list.id || "Unnamed list";
+        listSelect.appendChild(option);
+      });
+      listSelect.value = currentListId || "";
+      updateListHeader();
+    }
+
+    async function loadLists() {
+      try {
+        const res = await fetch("/lists");
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load lists");
+        renderLists(data);
+      } catch (e) {
+        showError(e.message);
+      }
+    }
+
+    async function createList(name) {
+      const res = await fetch("/lists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.message || "Failed to create list");
+      return data.data || data;
+    }
+
+    function setCurrentList(listId) {
+      currentListId = listId || "";
+      updateListHeader();
+      loadTasks();
     }
 
   function renderTasks(tasks) {
@@ -83,26 +157,30 @@
 
     async function loadTasks() {
       try {
-        const res  = await fetch(API);
+        const url = currentListId ? `${API}?list_id=${encodeURIComponent(currentListId)}` : API;
+        const res  = await fetch(url);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to load tasks");
-        renderTasks(data);
+        renderTasks(Array.isArray(data) ? data : []);
       } catch (e) {
         showError(e.message);
       }
     }
 
     async function createTask(title) {
+      const body = { title };
+      if (currentListId) {
+        body.list_id = currentListId;
+      }
+
       const res  = await fetch(API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create task");
-      
-      // FIX: Change 'data.data' to 'data.new_task' to match HAFRADA_models.py
-      return data.new_task; 
+      return data.new_task || data;
     }
 
 
@@ -214,13 +292,38 @@
       try {
         await createTask(title);
         newTitle.value = "";
-        loadTasks();
+        await loadTasks();
       } catch (e) {
         showError(e.message);
       }
     });
 
-    loadTasks();
+    listSelect.addEventListener("change", () => {
+      setCurrentList(listSelect.value);
+    });
+
+    newListForm.addEventListener("submit", async e => {
+      e.preventDefault();
+      const name = newListName.value.trim();
+      if (!name) return;
+      try {
+        const newList = await createList(name);
+        newListName.value = "";
+        await loadLists();
+        if (newList && newList.id) {
+          setCurrentList(newList.id);
+        }
+      } catch (e) {
+        showError(e.message);
+      }
+    });
+
+    async function init() {
+      await loadLists();
+      loadTasks();
+    }
+
+    init();
   </script>
 </body>
 </html>

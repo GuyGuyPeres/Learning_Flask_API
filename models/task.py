@@ -23,9 +23,12 @@ from config.database import get_collection
 #     }
 #     ]
 
-def get_all_tasks():
+def get_all_tasks(list_id=None):
     col = get_collection("TodosCollection")
-    all_todos = list(col.find())
+    query = {}
+    if list_id:
+        query["list_id"] = list_id
+    all_todos = list(col.find(query))
     for task in all_todos:
         task["_id"] = str(task["_id"])
         
@@ -59,6 +62,8 @@ def create_task(task_data):
         "title" : task_data["title"],
         "completed" : False
     }
+    if "list_id" in task_data and task_data["list_id"]:
+        new_task["list_id"] = task_data["list_id"]
 
     col.insert_one(new_task) # here the "_id" becomes objectId and we need to convert it to string.
     
