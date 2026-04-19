@@ -51,15 +51,16 @@
 
 ## ✨ Key Features
 
-- **Blueprint Architecture** - Routes, error handlers, and models are fully separated into Flask Blueprints, making the codebase easy to navigate and scale.
-- **MongoDB Atlas Integration** - Cloud-native database connectivity with TLS/SSL certificate validation via `certifi`, production-ready out of the box.
-- **Centralized Error Handling** - A dedicated errors Blueprint catches `404 NotFound`, `400 BadRequest`, `405 MethodNotAllowed`, and `422 UnprocessableEntity` with clean, consistent JSON responses.
+- **Blueprint Architecture** - Routes, error handlers, and models are separated into Flask Blueprints for clean organization.
+- **MongoDB Atlas Integration** - Cloud-native database connectivity with TLS/SSL certificate validation via `certifi`.
+- **Centralized Error Handling** - A dedicated errors Blueprint returns consistent JSON for `404`, `400`, `405`, and `422` cases.
 - **Full CRUD on Tasks** - Create, read, update, and delete tasks with proper HTTP semantics (`GET`, `POST`, `PUT`, `DELETE`).
-- **Interactive Frontend UI** - Includes a browser-based todo interface with inline edit/save controls, responsive cards, and an animated dark background.
-- **Input Validation** - Every write operation validates and sanitizes incoming data before it touches the database.
-- **ObjectId-Safe Responses** - MongoDB's `ObjectId` is automatically serialized to strings, so responses are always valid JSON.
-- **Environment-Driven Config** - All secrets and connection strings live in `.env` - no credentials ever touch the codebase.
-- **Test Suite Included** - A `tests/` directory keeps quality gates close to the code.
+- **Task Lists Support** - Create and manage named task lists, and filter tasks by `list_id`.
+- **Interactive Frontend UI** - Includes a browser-based todo interface with inline edit/save controls, list management, and a polished animated background.
+- **Input Validation** - Every write operation validates incoming JSON and returns clear error responses.
+- **ObjectId-Safe Responses** - MongoDB `ObjectId` fields are converted to strings for valid JSON output.
+- **Environment-Driven Config** - All secrets and connection strings live in `.env`, with no credentials committed.
+- **Test Suite Included** - A `tests/` directory keeps route and behavior tests close to the app.
 
 ---
 
@@ -77,6 +78,7 @@ The frontend features a modern dark theme optimized for extended use:
 - **Inline Edit Mode** - Click the pencil icon on any task to edit the title inline; press `Enter` to save or `Escape` to cancel
 - **Toggle Completion** - Click the checkbox to mark tasks complete/incomplete
 - **Instant Delete** - Click the delete (✕) icon to remove a task immediately
+- **List Management** - Create new lists, switch between them, and add tasks inside a selected list.
 - **Real-Time Sync** - All changes update the backend instantly via REST API calls
 
 ### Responsive Layout
@@ -124,13 +126,7 @@ pip install -r requirements.txt
 
 **4. Configure environment variables**
 
-Create a `.env` file in the project root:
-
-```bash
-cp .env.example .env   # if provided, otherwise create manually
-```
-
-Then open `.env` and fill in your values:
+Create a `.env` file in the project root and add your MongoDB connection string:
 
 ```env
 MONDGO_DB_CON_STRING=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
@@ -185,17 +181,22 @@ pytest tests/ -v
 
 ## 💡 Usage
 
-All endpoints are prefixed at `/tasks`. The API consumes and produces `application/json`.
+The API exposes task and list endpoints. The frontend UI calls these directly to keep tasks and lists in sync.
 
 ### Endpoints Overview
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/tasks` | Retrieve all tasks |
+| `GET` | `/tasks` | Retrieve all tasks or tasks filtered by `list_id` |
 | `POST` | `/tasks` | Create a new task |
 | `GET` | `/tasks/<id>` | Retrieve a single task by ID |
 | `PUT` | `/tasks/<id>` | Update a task by ID |
 | `DELETE` | `/tasks/<id>` | Delete a task by ID |
+| `GET` | `/lists` | Retrieve all lists |
+| `POST` | `/lists` | Create a new list |
+| `GET` | `/lists/<list_id>` | Retrieve a single list by ID |
+| `PUT` | `/lists/<list_id>` | Rename a list |
+| `DELETE` | `/lists/<list_id>` | Delete a list and all its tasks |
 
 ---
 
@@ -205,6 +206,12 @@ All endpoints are prefixed at `/tasks`. The API consumes and produces `applicati
 curl http://127.0.0.1:5000/tasks
 ```
 
+**Optional filter by list:**
+
+```bash
+curl http://127.0.0.1:5000/tasks?list_id=<list_id>
+```
+
 **Response `200 OK`:**
 
 ```json
@@ -212,12 +219,8 @@ curl http://127.0.0.1:5000/tasks
   {
     "_id": "664f1c2a8e442d001f3j9c11",
     "title": "Learn Flask",
-    "completed": false
-  },
-  {
-    "_id": "664f1c2a6e4b2d001g3a9c12",
-    "title": "Build API",
-    "completed": true
+    "completed": false,
+    "list_id": "7f3a2b1c-4d5e-6f7g-8h9i-0j1k2l3m4n5o"
   }
 ]
 ```
@@ -229,10 +232,10 @@ curl http://127.0.0.1:5000/tasks
 ```bash
 curl -X POST http://127.0.0.1:5000/tasks \
   -H "Content-Type: application/json" \
-  -d '{"title": "Write unit tests"}'
+  -d '{"title": "Write unit tests", "list_id": "<list_id>"}'
 ```
 
-**Response `200 OK`:**
+**Response `201 Created`:**
 
 ```json
 {
@@ -240,7 +243,8 @@ curl -X POST http://127.0.0.1:5000/tasks \
   "new_task": {
     "_id": "664f1d359e4b2d001f3a9c99",
     "title": "Write unit tests",
-    "completed": false
+    "completed": false,
+    "list_id": "<list_id>"
   }
 }
 ```
@@ -250,7 +254,7 @@ curl -X POST http://127.0.0.1:5000/tasks \
 ### `PUT /tasks/<id>` - Update a task
 
 ```bash
-curl -X PUT http://127.0.0.1:5000/tasks/664f1d3bld4b2d001f3a9c99 \
+curl -X PUT http://127.0.0.1:5000/tasks/664f1d3b9e4b2d001f3a9c99 \
   -H "Content-Type: application/json" \
   -d '{"title": "Write unit tests", "completed": true}'
 ```
@@ -258,7 +262,7 @@ curl -X PUT http://127.0.0.1:5000/tasks/664f1d3bld4b2d001f3a9c99 \
 **Response `200 OK`:**
 
 ```json
-"Task 664f1d3b9e4b2d09pf3a9c99 updated successfully"
+"Task 664f1d3b9e4b2d001f3a9c99 updated successfully"
 ```
 
 ---
@@ -272,7 +276,50 @@ curl -X DELETE http://127.0.0.1:5000/tasks/66381d3h9e4b2d041f3a9c99
 **Response `200 OK`:**
 
 ```json
-"Task with ID 664f1d3b9esg2d001f3a9c99 has been successfully deleted"
+"Task with ID 664f1d3b9e4b2d001f3a9c99 has been successfully deleted"
+```
+
+---
+
+### `GET /lists` - Retrieve all lists
+
+```bash
+curl http://127.0.0.1:5000/lists
+```
+
+**Response `200 OK`:**
+
+```json
+[
+  {
+    "_id": "64d0a2f5f4c3b1a0012d3e4f",
+    "id": "7f3a2b1c-4d5e-6f7g-8h9i-0j1k2l3m4n5o",
+    "name": "Work"
+  }
+]
+```
+
+---
+
+### `POST /lists` - Create a list
+
+```bash
+curl -X POST http://127.0.0.1:5000/lists \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Work"}'
+```
+
+**Response `201 Created`:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "64d0a2f5f4c3b1a0012d3e4f",
+    "id": "7f3a2b1c-4d5e-6f7g-8h9i-0j1k2l3m4n5o",
+    "name": "Work"
+  }
+}
 ```
 
 ---
@@ -296,30 +343,32 @@ All errors return a consistent JSON structure:
 ### Folder Structure
 
 ```
-Flask_API_MiniProject/
+MyFirstFlask1/
 │
-├── 📄 app.py                   # Application entry point - creates the Flask app & registers Blueprints
-├── 📄 database.py              # MongoDB client setup and collection reference
+├── app.py                    # Flask application entry point and blueprint registration
+├── requirements.txt          # Python dependency list
+├── README.md                 # Project documentation
+├── .env                      # Local environment configuration (not committed)
 │
-├── 📄 HAFRADA_routes.py        # Blueprint: URL routes and HTTP method dispatching
-├── 📄 HAFRADA_models.py        # Blueprint: Business logic and database operations
-├── 📄 HAFRADA_errors.py        # Blueprint: Centralized error handlers
+├── config/                   # Database and error handler setup
+│   ├── database.py           # MongoDB client initialization and collection helper
+│   └── errors.py             # Centralized Flask error handlers
 │
-├── 📁 templates/               # HTML frontend
-│   └── index.html              #   ↳ Interactive todo UI with dark theme
+├── routes/                   # HTTP route handlers organized by feature
+│   ├── tasks.py              # Task CRUD routes and list filtering support
+│   └── lists.py              # List CRUD routes
 │
-├── 📁 static/                  # CSS and client-side assets
-│   └── style.css               #   ↳ Dark theme, animations, responsive layout
+├── models/                   # Business logic and data access
+│   ├── task.py               # Task validation, persistence, and updates
+│   └── list.py               # List creation, update, delete, and serialization
 │
-├── 📁 archive/                 # Historical versions and experimental code
+├── templates/                # HTML frontend
+│   └── index.html            # Interactive todo UI with task/list toolbar
 │
-├── 📁 tests/                   # pytest test suite
-│   ├── test_routes.py          #   ↳ Route-level integration tests
-│   └── test_models.py          #   ↳ Model/logic unit tests
+├── static/                   # CSS and frontend assets
+│   └── style.css             # Dark theme, animated background, responsive layout
 │
-├── 📄 requirements.txt         # Pinned Python dependencies
-├── 📄 .gitignore               # Git exclusions (venv, .env, __pycache__, etc.)
-└── 📄 README.md                # You are here
+└── tests/                    # pytest tests for route and model behavior
 ```
 
 ### Request Flow
@@ -327,40 +376,23 @@ Flask_API_MiniProject/
 ```
 Browser (index.html)
      │
-     ├─── GET / ──────────────┐
-     │                        │
-     │   ┌──────────────────────────────┐
-     │   │  Render UI (dark theme)     │
-     │   │  - Starfield background     │
-     │   │  - Task list                │
-     │   │  - Edit/Delete controls     │
-     │   └──────────────────────────────┘
+     ├─── GET / ──────────────▶ Render UI and load current lists/tasks
      │
-     ├─── JavaScript API Calls ────────┐
-     │   (fetch to /tasks)             │
-     │                                 │
-     ▼                                 ▼
-HTTP Request
+     ├─── JS fetch /lists    ▶ List management
+     ├─── JS fetch /tasks    ▶ Task CRUD and list filtering
+     ▼
+ app.py  ──── registers ────▶ tasks_bp, lists_bp, errors_bp
+     │
+     ├─── routes/tasks.py    ▶ Task endpoints and query handling
+     ├─── routes/lists.py    ▶ List endpoints
      │
      ▼
- app.py  ──── registers ────▶  errors_bp (HAFRADA_errors.py)
-     │                              ↑ catches unhandled exceptions
+ models/task.py            ▶ Validate task data and interact with MongoDB
+ models/list.py            ▶ Persist lists, serialize IDs, delete associated tasks
      │
      ▼
-HAFRADA_routes.py  (tasks_bp)
-     │  dispatches by HTTP method
-     ▼
-HAFRADA_models.py
-     │  validates input, calls DB
-     ▼
-database.py  ──▶  MongoDB Atlas
-     │
-     ▼
-JSON Response ──────────────┐
-                            │
-                            ▼
-                  Update DOM & UI
-                  (smooth transitions)
+ config/database.py        ▶ MongoDB client / collection helpers
+ config/errors.py          ▶ Error translation to JSON responses
 ```
 
 ---
