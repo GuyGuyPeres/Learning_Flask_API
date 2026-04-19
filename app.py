@@ -2,8 +2,8 @@
 from flask import Flask, jsonify, request, render_template
 from werkzeug.exceptions import NotFound, BadRequest, Conflict, UnprocessableEntity, HTTPException, MethodNotAllowed
 from routes.tasks import tasks_bp
-from HAFRADA_errors import errors_bp
-from database import init_db
+from config.errors import errors_bp
+from config.database import init_db
 from pymongo import MongoClient
 import certifi
 import os

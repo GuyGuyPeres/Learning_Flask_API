@@ -1,8 +1,8 @@
 from flask import jsonify, request, Blueprint
 from werkzeug.exceptions import NotFound, BadRequest, Conflict, UnprocessableEntity, HTTPException, MethodNotAllowed
 import uuid
-from HAFRADA_models import get_all_tasks, get_task_by_id, create_task, update_task_with_put, delete_a_task_by_id
-from database import get_collection
+from models.task import get_all_tasks, get_task_by_id, create_task, update_task_with_put, delete_a_task_by_id
+from config.database import get_collection
 
 tasks_bp = Blueprint("tasks", __name__)
 

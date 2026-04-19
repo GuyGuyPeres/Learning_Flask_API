@@ -2,7 +2,7 @@ import uuid
 from bson import ObjectId
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import NotFound, BadRequest, Conflict, UnprocessableEntity, HTTPException, MethodNotAllowed
-from database import get_collection
+from config.database import get_collection
 
 
 # tasks = [
