@@ -2,7 +2,7 @@ import uuid
 from bson import ObjectId
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import NotFound, BadRequest, Conflict, UnprocessableEntity, HTTPException, MethodNotAllowed
-from database import todos
+from database import get_collection
 
 
 # tasks = [
@@ -24,7 +24,8 @@ from database import todos
 #     ]
 
 def get_all_tasks():
-    all_todos = list(todos.find())
+    col = get_collection("TodosCollection")
+    all_todos = list(col.find())
     for task in all_todos:
         task["_id"] = str(task["_id"])
         
@@ -33,13 +34,14 @@ def get_all_tasks():
 
 def get_task_by_id(task_id):
     try:
+        col = get_collection("TodosCollection")
         # MongoDB uses objectId - we convert the string from "Routes" to this object.
-        needed_task = todos.find_one({"_id": ObjectId(task_id)})
+        needed_task = col.find_one({"_id": ObjectId(task_id)})
     except Exception:
         # if the ID is in the incorrect MongoDB format. 
         raise NotFound(f"Invalid ID format: {task_id}")
     
-    needed_task = todos.find_one({"_id": ObjectId(task_id)})
+    needed_task = col.find_one({"_id": ObjectId(task_id)})
     if needed_task:
         # conversion of _id to string to we can return in it JSON.
         needed_task["_id"] = str(needed_task["_id"])
@@ -49,7 +51,7 @@ def get_task_by_id(task_id):
         
         
 def create_task(task_data):
-    
+    col = get_collection("TodosCollection")
     if not task_data or "title" not in task_data:
         raise BadRequest("Missing required field: 'title'")
 
@@ -58,7 +60,7 @@ def create_task(task_data):
         "completed" : False
     }
 
-    todos.insert_one(new_task) # here the "_id" becomes objectId and we need to convert it to string.
+    col.insert_one(new_task) # here the "_id" becomes objectId and we need to convert it to string.
     
     new_task["_id"] = str(new_task["_id"]) # here _id becomes a string 
     
@@ -68,6 +70,7 @@ def create_task(task_data):
     })
     
 def update_task_with_put(task_id):
+    col = get_collection("TodosCollection")
     new_data = request.json
     
     # validating the input
@@ -86,7 +89,7 @@ def update_task_with_put(task_id):
     try:
         # edit the specific task with the data the user entered.
         # $set מעדכן רק את השדות ששלחנו ושומר על שאר השדות הקיימים
-        result = todos.update_one(
+        result = col.update_one(
             {"_id": ObjectId(task_id)}, 
             {"$set": update_fields}
         )
@@ -100,9 +103,10 @@ def update_task_with_put(task_id):
         
         
 def delete_a_task_by_id(task_id):
+    col = get_collection("TodosCollection")
     try:
         # delete the specific task by the id (in the objectId format)
-        result = todos.delete_one({"_id": ObjectId(task_id)})
+        result = col.delete_one({"_id": ObjectId(task_id)})
     except Exception:
         # if the id is not in the correct mongoDB format.
         raise NotFound(f"Invalid ID format: {task_id}")
