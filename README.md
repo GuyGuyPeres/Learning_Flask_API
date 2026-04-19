@@ -37,11 +37,11 @@
 
 | Layer | Technology | Version |
 |---|---|---|
-| **Frontend** | HTML5 / CSS3 / Vanilla JS | — |
+| **Frontend** | HTML5 / CSS3 / Vanilla JS | - |
 | **Language** | Python | 3.10+ |
 | **Framework** | Flask | 3.1.3 |
 | **Database** | MongoDB (via PyMongo) | 4.16.0 |
-| **Cloud DB** | MongoDB Atlas | — |
+| **Cloud DB** | MongoDB Atlas | - |
 | **TLS/Certs** | Certifi | 2026.2.25 |
 | **Environment** | python-dotenv | 1.2.2 |
 | **Testing** | pytest | 9.0.3 |
@@ -51,15 +51,15 @@
 
 ## ✨ Key Features
 
-- **Blueprint Architecture** — Routes, error handlers, and models are fully separated into Flask Blueprints, making the codebase easy to navigate and scale.
-- **MongoDB Atlas Integration** — Cloud-native database connectivity with TLS/SSL certificate validation via `certifi`, production-ready out of the box.
-- **Centralized Error Handling** — A dedicated errors Blueprint catches `404 NotFound`, `400 BadRequest`, `405 MethodNotAllowed`, and `422 UnprocessableEntity` with clean, consistent JSON responses.
-- **Full CRUD on Tasks** — Create, read, update, and delete tasks with proper HTTP semantics (`GET`, `POST`, `PUT`, `DELETE`).
-- **Interactive Frontend UI** — Includes a browser-based todo interface with inline edit/save controls, responsive cards, and an animated dark background.
-- **Input Validation** — Every write operation validates and sanitizes incoming data before it touches the database.
-- **ObjectId-Safe Responses** — MongoDB's `ObjectId` is automatically serialized to strings, so responses are always valid JSON.
-- **Environment-Driven Config** — All secrets and connection strings live in `.env` — no credentials ever touch the codebase.
-- **Test Suite Included** — A `tests/` directory keeps quality gates close to the code.
+- **Blueprint Architecture** - Routes, error handlers, and models are fully separated into Flask Blueprints, making the codebase easy to navigate and scale.
+- **MongoDB Atlas Integration** - Cloud-native database connectivity with TLS/SSL certificate validation via `certifi`, production-ready out of the box.
+- **Centralized Error Handling** - A dedicated errors Blueprint catches `404 NotFound`, `400 BadRequest`, `405 MethodNotAllowed`, and `422 UnprocessableEntity` with clean, consistent JSON responses.
+- **Full CRUD on Tasks** - Create, read, update, and delete tasks with proper HTTP semantics (`GET`, `POST`, `PUT`, `DELETE`).
+- **Interactive Frontend UI** - Includes a browser-based todo interface with inline edit/save controls, responsive cards, and an animated dark background.
+- **Input Validation** - Every write operation validates and sanitizes incoming data before it touches the database.
+- **ObjectId-Safe Responses** - MongoDB's `ObjectId` is automatically serialized to strings, so responses are always valid JSON.
+- **Environment-Driven Config** - All secrets and connection strings live in `.env` - no credentials ever touch the codebase.
+- **Test Suite Included** - A `tests/` directory keeps quality gates close to the code.
 
 ---
 
@@ -68,16 +68,16 @@
 ### Dark Theme Design
 The frontend features a modern dark theme optimized for extended use:
 
-- **Cosmic Gradient Background** — Dynamic gradient with radial accent layers (blue, purple, green) that evolve across the viewport
-- **Animated Starfield** — Subtle drifting star particles for visual depth and motion
-- **Glowing Orbs** — Smooth floating animation with blur effects creating an immersive backdrop
-- **Semi-Transparent Cards** — Task items and containers use frosted glass aesthetics with `rgba()` layers
+- **Cosmic Gradient Background** - Dynamic gradient with radial accent layers (blue, purple, green) that evolve across the viewport
+- **Animated Starfield** - Subtle drifting star particles for visual depth and motion
+- **Glowing Orbs** - Smooth floating animation with blur effects creating an immersive backdrop
+- **Semi-Transparent Cards** - Task items and containers use frosted glass aesthetics with `rgba()` layers
 
 ### Interactive Features
-- **Inline Edit Mode** — Click the pencil icon on any task to edit the title inline; press `Enter` to save or `Escape` to cancel
-- **Toggle Completion** — Click the checkbox to mark tasks complete/incomplete
-- **Instant Delete** — Click the delete (✕) icon to remove a task immediately
-- **Real-Time Sync** — All changes update the backend instantly via REST API calls
+- **Inline Edit Mode** - Click the pencil icon on any task to edit the title inline; press `Enter` to save or `Escape` to cancel
+- **Toggle Completion** - Click the checkbox to mark tasks complete/incomplete
+- **Instant Delete** - Click the delete (✕) icon to remove a task immediately
+- **Real-Time Sync** - All changes update the backend instantly via REST API calls
 
 ### Responsive Layout
 - Centered container layout that works on desktop and tablet sizes
@@ -148,7 +148,7 @@ MONDGO_DB_CON_STRING=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.
 **Checklist:**
 1. Confirm your Atlas cluster is not paused (free tier auto-pauses after inactivity).
 2. Whitelist your IP in Atlas under **Network Access → Add IP Address**.
-3. Double-check the connection string — the env variable name is `MONDGO_DB_CON_STRING` (note the typo — matches the source code intentionally).
+3. Double-check the connection string - the env variable name is `MONDGO_DB_CON_STRING` (note the typo - matches the source code intentionally).
 4. Make sure `certifi` is installed: `pip show certifi`.
 
 **Problem:** `ModuleNotFoundError` on startup.
@@ -199,7 +199,7 @@ All endpoints are prefixed at `/tasks`. The API consumes and produces `applicati
 
 ---
 
-### `GET /tasks` — List all tasks
+### `GET /tasks` - List all tasks
 
 ```bash
 curl http://127.0.0.1:5000/tasks
@@ -224,7 +224,7 @@ curl http://127.0.0.1:5000/tasks
 
 ---
 
-### `POST /tasks` — Create a task
+### `POST /tasks` - Create a task
 
 ```bash
 curl -X POST http://127.0.0.1:5000/tasks \
@@ -247,7 +247,7 @@ curl -X POST http://127.0.0.1:5000/tasks \
 
 ---
 
-### `PUT /tasks/<id>` — Update a task
+### `PUT /tasks/<id>` - Update a task
 
 ```bash
 curl -X PUT http://127.0.0.1:5000/tasks/664f1d3bld4b2d001f3a9c99 \
@@ -263,7 +263,7 @@ curl -X PUT http://127.0.0.1:5000/tasks/664f1d3bld4b2d001f3a9c99 \
 
 ---
 
-### `DELETE /tasks/<id>` — Delete a task
+### `DELETE /tasks/<id>` - Delete a task
 
 ```bash
 curl -X DELETE http://127.0.0.1:5000/tasks/66381d3h9e4b2d041f3a9c99
@@ -298,7 +298,7 @@ All errors return a consistent JSON structure:
 ```
 Flask_API_MiniProject/
 │
-├── 📄 app.py                   # Application entry point — creates the Flask app & registers Blueprints
+├── 📄 app.py                   # Application entry point - creates the Flask app & registers Blueprints
 ├── 📄 database.py              # MongoDB client setup and collection reference
 │
 ├── 📄 HAFRADA_routes.py        # Blueprint: URL routes and HTTP method dispatching
@@ -371,9 +371,9 @@ JSON Response ──────────────┐
 
 <br/>
 
-- Use descriptive variable names — clarity beats brevity.
+- Use descriptive variable names - clarity beats brevity.
 - Keep route handlers thin: dispatch to model functions, don't write logic in routes.
-- All error cases should raise Werkzeug HTTP exceptions (e.g., `NotFound`, `BadRequest`) — never return raw error strings from routes.
+- All error cases should raise Werkzeug HTTP exceptions (e.g., `NotFound`, `BadRequest`) - never return raw error strings from routes.
 - Use type hints where practical.
 - Add a docstring to any new function that isn't immediately self-explanatory.
 
