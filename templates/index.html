@@ -70,7 +70,7 @@
       if (!header) return;
       if (currentListId) {
         const selected = listsCache.find(list => list.id === currentListId);
-        header.textContent = selected ? `Todo List — ${selected.name}` : "Todo List";
+        header.textContent = selected ? `Todo List - ${selected.name}` : "Todo List";
       } else {
         header.textContent = "Todo List";
       }
