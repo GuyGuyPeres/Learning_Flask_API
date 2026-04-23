@@ -1,6 +1,4 @@
 
-from flask import Flask, jsonify, request
-from werkzeug.exceptions import NotFound, BadRequest, Conflict, UnprocessableEntity, HTTPException, MethodNotAllowed
 from pymongo import MongoClient
 import certifi
 import os
