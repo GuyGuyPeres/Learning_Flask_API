@@ -41,8 +41,7 @@ def get_task_by_id(task_id):
         # MongoDB uses objectId - we convert the string from "Routes" to this object.
         needed_task = col.find_one({"_id": ObjectId(task_id)})
     except Exception:
-        # if the ID is in the incorrect MongoDB format. 
-        raise NotFound(f"Invalid ID format: {task_id}")
+        raise NotFound(f"Task with ID {task_id} not found")
     
     needed_task = col.find_one({"_id": ObjectId(task_id)})
     if needed_task:
@@ -50,7 +49,7 @@ def get_task_by_id(task_id):
         needed_task["_id"] = str(needed_task["_id"])
         return jsonify(needed_task)
     else:
-        raise NotFound(f"Task with ID {task_id} not found")
+        raise NotFound(f"Invalid ID format: {task_id}") # if the ID is in the incorrect MongoDB format. 
         
         
 def create_task(task_data):
